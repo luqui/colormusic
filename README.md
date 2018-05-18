@@ -5,7 +5,7 @@ a 3:2 polyrhythm "pass the ketchup":
 
     3:2 x-----x-----x-----x-----x-----x-----x
     1:1 x--------x--------x--------x--------x
-    pass the ketchup  pass the ketchup
+        pass the ketchup  pass the ketchup
 
 So this is a "perfect fifth" polyrhythm.  If we take the faster rhythm and
 overlay another 3:2 on top, we get 9:4.  And taking every other note, dividing
