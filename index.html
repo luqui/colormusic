@@ -1,0 +1,174 @@
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script>
+// wavelength in nm
+var wavelengthToRGB = function(λ) {
+  // translated from http://www.efg2.com/Lab/ScienceAndEngineering/Spectra.htm
+  var red, green, blue;
+  if (380 <= λ && λ < 440) {
+    red = -(λ - 440) / (440 - 380);
+    green = 0;
+    blue = 1;
+  }
+  else if (440 <= λ && λ < 490) {
+    red = 0;
+    green = (λ - 440) / (490 - 440);
+    blue = 1;
+  }
+  else if (490 <= λ && λ < 510) {
+    red = 0;
+    green = 1;
+    blue = -(λ - 510) / (510 - 490);
+  }
+  else if (510 <= λ && λ < 580) {
+    red = (λ - 510) / (580 - 510);
+    green = 1;
+    blue = 0;
+  }
+  else if (580 <= λ && λ < 645) {
+    red = 1;
+    green = -(λ  - 645) / (645 - 580);
+    blue = 0;
+  }
+  else if (645 <= λ && λ < 780) {
+    red = 1;
+    green = 0;
+    blue = 0;
+  }
+  else {
+    red = 0;
+    green = 0;
+    blue = 0;
+  }
+
+  var factor;
+  if (380 <= λ && λ < 420) {
+    factor = 0.3 + 0.7 * (λ - 380) / (420 - 380);
+  }
+  else if (420 <= λ && λ < 700) {
+    factor = 1;
+  }
+  else if (700 <= λ && λ < 780) {
+    factor = 0.3 + 0.7 * (780 - λ) / (780 - 700);
+  }
+  else {
+    factor = 0;
+  }
+
+  var adjust = function(color, factor) {
+    var GAMMA = 0.80;
+    if (color == 0) {
+      return 0;
+    }
+    else {
+      return Math.round(255 * Math.pow(color * factor, GAMMA));
+    }
+  }
+
+  return [adjust(red, factor), adjust(green, factor), adjust(blue, factor)];
+};
+
+// THz -> nm
+var freqToWavelength = function(freq) {
+  var c = 299792.458; // nm THz
+  return c / freq;
+};
+
+var colorArrayToSpec = function(array) {
+  return 'rgb(' + array[0] + ',' + array[1] + ',' + array[2] + ')';
+};
+
+var freqToColorArray = function(freq) {
+  return wavelengthToRGB(freqToWavelength(freq));
+};
+
+var freqToColorSpec = function(freq) {
+  return colorArrayToSpec(freqToColorArray(freq));
+};
+
+var mix = function(colors) {
+  var r = 0, g = 0, b = 0;
+  for (var i = 0; i < colors.length; i++) {
+    r += colors[i][0] / colors.length;
+    g += colors[i][1] / colors.length;
+    b += colors[i][2] / colors.length;
+  }
+  return [r,g,b];
+};
+
+var displayChord = function(colorArrays) {
+  var container = $('<div>');
+  var w = 256;
+  var rept = 1;
+  while (w >= 1) {
+    var row = $('<div>');
+    for (var r = 0; r < rept; r++) {
+      for (var i = 0; i < colorArrays.length; i++) {
+        row.append($('<span>').addClass('colorBox')
+                              .css('background-color', colorArrayToSpec(colorArrays[i]))
+                              .css('width', w + 'px'));
+      }
+    }
+    container.append(row);
+    w /= 2;
+    rept *= 2;
+  }
+  container.append($('<div>').append(
+    $('<span>').addClass('colorBox')
+               .css('background-color', colorArrayToSpec(mix(colorArrays)))
+               .css('width', 256*colorArrays.length + 'px')));
+  return container;
+};
+
+var displayChordIntervals = function(basefreq, intervals) {
+  return displayChord(intervals.map(x => freqToColorArray(normalizeFreq(basefreq * x))));
+};
+
+var normalizeFreq = function(freq) {
+  if (freq <= 0) { return 0; }
+
+  while (freq < 385) {
+    freq *= 2;
+  }
+  while (freq > 770) {
+    freq /= 2;
+  }
+  return freq;
+};
+
+$(function() {
+  var basefreqSlider = $('#basefreq');
+  var update = function() {
+    
+    var interval = 3/2;
+    var freq1 = normalizeFreq(Number(basefreqSlider.val()));
+    var freq2 = normalizeFreq(interval * freq1);
+    $('#container').empty().append(
+      displayChordIntervals(Number(basefreqSlider.val()), [1,6/5,3/2]));
+  };
+  basefreqSlider.on('input', update);
+  update();
+});
+</script>
+<style>
+body {
+  background: #888888;
+}
+.colorBox {
+  display: inline-block;
+  height: 1in;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+  
+</style>
+</head>
+<body>
+<input type="range" min="389" max="778" value="380" id="basefreq"></input>
+<div id="container">
+</div>
+</body>
+</html>
+
