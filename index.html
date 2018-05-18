@@ -88,13 +88,14 @@ var freqToColorSpec = function(freq) {
 };
 
 var mix = function(colors) {
+  var GAMMA = 2.2;
   var r = 0, g = 0, b = 0;
   for (var i = 0; i < colors.length; i++) {
-    r += colors[i][0]*colors[i][0] / colors.length;
-    g += colors[i][1]*colors[i][1] / colors.length;
-    b += colors[i][2]*colors[i][2] / colors.length;
+    r += Math.pow(colors[i][0], GAMMA) / colors.length;
+    g += Math.pow(colors[i][1], GAMMA) / colors.length;
+    b += Math.pow(colors[i][2], GAMMA) / colors.length;
   }
-  return [Math.sqrt(r),Math.sqrt(g),Math.sqrt(b)];
+  return [Math.pow(r, 1/GAMMA), Math.pow(g, 1/GAMMA), Math.pow(b, 1/GAMMA)];
 };
 
 var displayChord = function(colorArrays) {
