@@ -90,11 +90,11 @@ var freqToColorSpec = function(freq) {
 var mix = function(colors) {
   var r = 0, g = 0, b = 0;
   for (var i = 0; i < colors.length; i++) {
-    r += colors[i][0] / colors.length;
-    g += colors[i][1] / colors.length;
-    b += colors[i][2] / colors.length;
+    r += colors[i][0]*colors[i][0] / colors.length;
+    g += colors[i][1]*colors[i][1] / colors.length;
+    b += colors[i][2]*colors[i][2] / colors.length;
   }
-  return [r,g,b];
+  return [Math.sqrt(r),Math.sqrt(g),Math.sqrt(b)];
 };
 
 var displayChord = function(colorArrays) {
@@ -139,15 +139,22 @@ var normalizeFreq = function(freq) {
 
 $(function() {
   var basefreqSlider = $('#basefreq');
+  var intervalsInput = $('#intervals');
   var update = function() {
-    
-    var interval = 3/2;
-    var freq1 = normalizeFreq(Number(basefreqSlider.val()));
-    var freq2 = normalizeFreq(interval * freq1);
+    var intervals = intervalsInput.val().split(',').map(function(s) {
+      var frac = s.split('/');
+      return frac[0] / frac[1];
+    });
+
+    for (var i = 0; i < intervals.length; i++) {
+      if (!isFinite(intervals[i])) { return; }
+    }
+
     $('#container').empty().append(
-      displayChordIntervals(Number(basefreqSlider.val()), [1,6/5,3/2]));
+      displayChordIntervals(Number(basefreqSlider.val()), intervals));
   };
   basefreqSlider.on('input', update);
+  intervalsInput.on('input', update);
   update();
 });
 </script>
@@ -166,7 +173,8 @@ body {
 </style>
 </head>
 <body>
-<input type="range" min="389" max="778" value="380" id="basefreq"></input>
+Base frequency: <input type="range" min="389" max="778" value="380" id="basefreq"></input>
+Intervals: <input type="text" value="1/1,3/2" id="intervals"></input>
 <div id="container">
 </div>
 </body>
